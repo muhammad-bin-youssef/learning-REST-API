@@ -1,5 +1,8 @@
 from django.urls import path
 
-from .views import HelloApiView
+from .views import EchoView, HelloApiView
 
-urlpatterns = [path("", HelloApiView.as_view())]
+urlpatterns = [
+    path("", HelloApiView.as_view()),
+    path("echo/", EchoView.as_view()),
+]
