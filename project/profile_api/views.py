@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView, status
 from rest_framework.viewsets import ViewSet
 
-from .serializers import EchoSerializer, HelloSerializer
+from .serializers import HelloSerializer
 
 
 class HelloApiView(APIView):
@@ -67,16 +67,3 @@ class HelloViewSet(ViewSet):
     def destroy(self, request, pk=None):
 
         return Response({"http_method": "DELETE"})
-
-
-class EchoView(APIView):
-    serializer_class = EchoSerializer
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-
-        if serializer.is_valid():
-            return Response({"message": serializer.validated_data.get("name")})
-
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
