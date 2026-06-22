@@ -37,7 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=255,
         blank=False,
     )
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     objects = UserManager()
@@ -46,11 +46,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["email"]
 
     def __str__(self):
-        return self.email
+        return self.username
 
 
 class Task(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")
-    title = models.TextField()
-    note = models.TextField()
-    progress = models.BooleanField(default=False)
+    title = models.CharField(max_length=255, blank=False)
+    note = models.CharField(max_length=2048, default="", blank=True)
+    is_finished = models.BooleanField(default=False, blank=False)

@@ -1,10 +1,31 @@
 from django.urls import path
 
-from .views import TodoView
+from main import views
 
 urlpatterns = [
     path(
-        "Todos",
-        TodoView.as_view(),
+        "users/todos",
+        views.TodosView.as_view(),
+    ),
+    path(
+        "users/manage",
+        views.UserManageView.as_view(),
+    ),
+    path(
+        "user/todos",
+        views.UserTodosView.as_view(),
+    ),
+    path(
+        "user/todo",
+        views.UserTodoView.as_view(),
+    ),
+    path(
+        "user/todos/isfinished",
+        views.UserTodosSortView.as_view(),
+    ),
+    path(
+        "user/todo/manage/",
+        views.TodoCreateView.as_view(),
     ),
 ]
+# "user/todos/isfinished" -> I can just merge it with  "user/todos",
