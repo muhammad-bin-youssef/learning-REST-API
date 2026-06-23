@@ -1,3 +1,5 @@
+from enum import unique
+
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -32,10 +34,9 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=255, blank=False, unique=True)
+    username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(
         max_length=255,
-        blank=False,
     )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -50,7 +51,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Task(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")
-    title = models.CharField(max_length=255, blank=False)
-    note = models.CharField(max_length=2048, default="", blank=True)
-    is_finished = models.BooleanField(default=False, blank=False)
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="tasks", null=False
+    )
+    title = models.CharField(max_length=255, null=False)
+    note = models.CharField(max_length=2048, default="")
+    is_finished = models.BooleanField(default=False)

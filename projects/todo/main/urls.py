@@ -9,7 +9,7 @@ urlpatterns = [
     ),
     path(
         "users/manage",
-        views.UserManageView.as_view(),
+        views.UsersManageView.as_view(),
     ),
     path(
         "user/todos",
@@ -25,7 +25,7 @@ urlpatterns = [
     ),
     path(
         "user/todo/manage/",
-        views.TodoCreateView.as_view(),
+        views.UserManageView.as_view(),
     ),
 ]
-# "user/todos/isfinished" -> I can just merge it with  "user/todos",
+# "user/todos/isfinished" -> I can just merge it with "user/todos" using just some logic
