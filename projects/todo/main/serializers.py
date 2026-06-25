@@ -30,6 +30,10 @@ class CreateUser(serializers.Serializer):
     password = serializers.CharField(max_length=255, required=True)
 
 
+class DeleteUser(CreateUser):
+    email = serializers.EmailField(max_length=255, required=False)
+
+
 class PatchTodo(serializers.Serializer):
     username = serializers.CharField(max_length=255, required=True)
     old_todo_title = serializers.CharField(max_length=255, required=True)
