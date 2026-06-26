@@ -2,12 +2,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView, status
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import HelloSerializer
 from profile_api import serializers
 from profile_api import models
 from profile_api import permissions
 from rest_framework import filters
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.settings import api_settings
 
 
 class HelloApiView(APIView):
@@ -71,7 +75,7 @@ class HelloViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
 
-        return Response({"http_method": "DELETE"})
+        return Response({"ObtainAuthToken": "DELETE"})
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -84,3 +88,20 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         "name",
         "email",
     )
+
+
+class UserLoginApiView(ObtainAuthToken):
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+
+class UserProfileFeedViewSet(viewsets.ModelViewSet):
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = serializers.ProfileFeedItemSerializer
+    queryset = models.ProfileFeedItem.objects.all()
+    permission_classes = (
+        permissions.UpdateOwnStatus,
+        IsAuthenticated,
+    )
+
+    def perform_create(self, serializer):
+        serializer.save(user_profile=self.request.user)
