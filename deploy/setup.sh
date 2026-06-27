@@ -23,7 +23,6 @@ python3 -m venv $PROJECT_BASE_PATH/env
 
 $PROJECT_BASE_PATH/env/bin/pip install --upgrade pip setuptools wheel
 
-# FIXED: Added python-multipart for the cgi polyfill dependency
 $PROJECT_BASE_PATH/env/bin/pip install -r $PROJECT_BASE_PATH/requirements.txt
 $PROJECT_BASE_PATH/env/bin/pip install gunicorn python-multipart
 
