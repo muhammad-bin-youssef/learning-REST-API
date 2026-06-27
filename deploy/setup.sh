@@ -27,9 +27,9 @@ python3 -m venv $PROJECT_BASE_PATH/env
 # Upgrade baseline packaging tools
 $PROJECT_BASE_PATH/env/bin/pip install --upgrade pip setuptools wheel
 
-# Install requirements along with Gunicorn
+# Install requirements along with Gunicorn and the cgi fix for Python 3.14
 $PROJECT_BASE_PATH/env/bin/pip install -r $PROJECT_BASE_PATH/requirements.txt
-$PROJECT_BASE_PATH/env/bin/pip install gunicorn
+$PROJECT_BASE_PATH/env/bin/pip install gunicorn legacy-cgi
 
 # Run migrations from the project subdirectory
 $PROJECT_BASE_PATH/env/bin/python $PROJECT_SRC_PATH/manage.py migrate
