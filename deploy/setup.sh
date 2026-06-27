@@ -10,31 +10,38 @@ PROJECT_SRC_PATH="$PROJECT_BASE_PATH/project"
 export DEBIAN_FRONTEND=noninteractive
 locale-gen en_GB.UTF-8
 
-echo "Adding deadsnakes repository for legacy Python support..."
+echo "Installing dependencies..."
 apt-get update
-apt-get install -y software-properties-common
-add-apt-repository -y ppa:deadsnakes/ppa
-apt-get update
-
-echo "Installing dependencies (including Python 3.9)..."
-apt-get install -y python3.9 python3.9-dev python3.9-venv sqlite3 supervisor nginx git build-essential
+apt-get install -y python3-dev python3-venv sqlite3 python3-pip supervisor nginx git build-essential
 
 mkdir -p $PROJECT_BASE_PATH
-# Delete directory if it already exists to prevent git clone failure
 if [ -d "$PROJECT_BASE_PATH/.git" ]; then
     rm -rf "$PROJECT_BASE_PATH"
 fi
 git clone $PROJECT_GIT_URL $PROJECT_BASE_PATH
 
-# Force the virtual environment to build explicitly using Python 3.9
-python3.9 -m venv $PROJECT_BASE_PATH/env
+# Use default system Python 3.14
+python3 -m venv $PROJECT_BASE_PATH/env
 
-# Upgrade baseline packaging tools inside the environment
+# Upgrade packaging tools
 $PROJECT_BASE_PATH/env/bin/pip install --upgrade pip setuptools wheel
 
-# Install production dependencies safely under Python 3.9
+# Install core packages along with Gunicorn
 $PROJECT_BASE_PATH/env/bin/pip install -r $PROJECT_BASE_PATH/requirements.txt
 $PROJECT_BASE_PATH/env/bin/pip install gunicorn
+
+# FIX: Manually inject a cgi polyfill into the environment so Django 2.2 doesn't crash on Python 3.14
+SITE_PACKAGES_DIR=$($PROJECT_BASE_PATH/env/bin/python -c "import site; print(site.getsitepackages()[0])")
+cat << 'EOF' > "$SITE_PACKAGES_DIR/cgi.py"
+# Temporary cgi polyfill for legacy frameworks under Python 3.14
+from multipart.multipart import parse_options_header
+import sys
+
+def parse_header(line):
+    return parse_options_header(line)
+
+sys.modules['cgi'] = sys.modules[__name__]
+EOF
 
 # Run migrations from the project subdirectory
 $PROJECT_BASE_PATH/env/bin/python $PROJECT_SRC_PATH/manage.py migrate
