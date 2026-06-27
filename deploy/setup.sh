@@ -33,7 +33,7 @@ $PROJECT_BASE_PATH/env/bin/pip install -r $PROJECT_BASE_PATH/requirements.txt
 $PROJECT_BASE_PATH/env/bin/pip install gunicorn
 
 # Run migrations
-$PROJECT_BASE_PATH/env/bin/python $PROJECT_BASE_PATH/manage.py migrate
+$PROJECT_BASE_PATH/env/bin/python /usr/local/apps/profiles-rest-api/project/manage.py migrate
 
 # Setup Supervisor to run our gunicorn process.
 cp $PROJECT_BASE_PATH/deploy/supervisor_profiles_api.conf /etc/supervisor/conf.d/profiles_api.conf
