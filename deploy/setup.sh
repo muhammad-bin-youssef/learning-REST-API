@@ -38,7 +38,7 @@ echo "Running database migrations..."
 $PROJECT_BASE_PATH/env/bin/python $PROJECT_SRC_PATH/manage.py migrate
 
 echo "Configuring Server routing..."
-cp $PROJECT_SRC_PATH/deploy/supervisor_profiles_api.conf /etc/supervisor/conf.d/profiles_api.conf
+cp $PROJECT_BASE_PATH/deploy/supervisor_profiles_api.conf /etc/supervisor/conf.d/profiles_api.conf
 supervisorctl reread
 supervisorctl update
 supervisorctl restart profiles_api
