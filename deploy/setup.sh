@@ -2,10 +2,9 @@
 
 set -e
 
-# TODO: Set to URL of git repo.
 PROJECT_GIT_URL='https://github.com/muhammad-bin-youssef/learning-REST-API.git'
-
 PROJECT_BASE_PATH='/usr/local/apps/profiles-rest-api'
+PROJECT_SRC_PATH="$PROJECT_BASE_PATH/project"
 
 # Set Ubuntu Language non-interactively
 export DEBIAN_FRONTEND=noninteractive
@@ -32,17 +31,17 @@ $PROJECT_BASE_PATH/env/bin/pip install --upgrade pip setuptools wheel
 $PROJECT_BASE_PATH/env/bin/pip install -r $PROJECT_BASE_PATH/requirements.txt
 $PROJECT_BASE_PATH/env/bin/pip install gunicorn
 
-# Run migrations
-$PROJECT_BASE_PATH/env/bin/python /usr/local/apps/profiles-rest-api/project/manage.py migrate
+# Run migrations from the project subdirectory
+$PROJECT_BASE_PATH/env/bin/python $PROJECT_SRC_PATH/manage.py migrate
 
-# Setup Supervisor to run our gunicorn process.
-cp $PROJECT_BASE_PATH/deploy/supervisor_profiles_api.conf /etc/supervisor/conf.d/profiles_api.conf
+# Setup Supervisor to run our gunicorn process
+cp $PROJECT_SRC_PATH/deploy/supervisor_profiles_api.conf /etc/supervisor/conf.d/profiles_api.conf
 supervisorctl reread
 supervisorctl update
 supervisorctl restart profiles_api
 
-# Setup nginx to make our application accessible.
-cp $PROJECT_BASE_PATH/deploy/nginx_profiles_api.conf /etc/nginx/sites-available/profiles_api.conf
+# Setup nginx to make our application accessible
+cp $PROJECT_SRC_PATH/deploy/nginx_profiles_api.conf /etc/nginx/sites-available/profiles_api.conf
 rm -f /etc/nginx/sites-enabled/default
 rm -f /etc/nginx/sites-enabled/profiles_api.conf
 ln -s /etc/nginx/sites-available/profiles_api.conf /etc/nginx/sites-enabled/profiles_api.conf
