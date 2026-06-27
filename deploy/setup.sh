@@ -25,20 +25,17 @@ git clone $PROJECT_GIT_URL $PROJECT_BASE_PATH
 
 python3 -m venv $PROJECT_BASE_PATH/env
 
-# Fix: Inject compiler flag to ignore incompatible pointer errors during uWSGI build
-export CFLAGS="-Wno-error=incompatible-pointer-types"
-
+# Upgrade baseline packaging tools
 $PROJECT_BASE_PATH/env/bin/pip install --upgrade pip setuptools wheel
-$PROJECT_BASE_PATH/env/bin/pip install -r $PROJECT_BASE_PATH/requirements.txt
-$PROJECT_BASE_PATH/env/bin/pip install uwsgi==2.0.21
 
-# Clear compiler flags after execution
-unset CFLAGS
+# Install requirements along with Gunicorn
+$PROJECT_BASE_PATH/env/bin/pip install -r $PROJECT_BASE_PATH/requirements.txt
+$PROJECT_BASE_PATH/env/bin/pip install gunicorn
 
 # Run migrations
 $PROJECT_BASE_PATH/env/bin/python $PROJECT_BASE_PATH/manage.py migrate
 
-# Setup Supervisor to run our uwsgi process.
+# Setup Supervisor to run our gunicorn process.
 cp $PROJECT_BASE_PATH/deploy/supervisor_profiles_api.conf /etc/supervisor/conf.d/profiles_api.conf
 supervisorctl reread
 supervisorctl update
