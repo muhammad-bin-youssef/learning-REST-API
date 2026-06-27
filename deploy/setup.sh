@@ -9,37 +9,35 @@ PROJECT_SRC_PATH="$PROJECT_BASE_PATH/project"
 export DEBIAN_FRONTEND=noninteractive
 locale-gen en_GB.UTF-8
 
-echo "Installing dependencies..."
+echo "Installing web server and database dependencies..."
 apt-get update
-apt-get install -y python3-dev python3-venv sqlite3 python3-pip supervisor nginx git build-essential
+# We stripped out all the heavy C-compilers. We only need these now:
+apt-get install -y supervisor nginx git sqlite3 curl
 
+echo "Installing uv (The blazing fast Python manager)..."
+# Install uv so it is available globally in /usr/local/bin
+curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="/usr/local/bin" sh
+
+echo "Setting up project directory..."
 mkdir -p $PROJECT_BASE_PATH
 if [ -d "$PROJECT_BASE_PATH/.git" ]; then
     rm -rf "$PROJECT_BASE_PATH"
 fi
 git clone $PROJECT_GIT_URL $PROJECT_BASE_PATH
 
-python3 -m venv $PROJECT_BASE_PATH/env
+echo "Using uv to fetch Python 3.9 and build the environment instantly..."
+# uv will seamlessly download a standalone Python 3.9 binary and create the venv
+uv venv $PROJECT_BASE_PATH/env --python 3.9
 
-$PROJECT_BASE_PATH/env/bin/pip install --upgrade pip setuptools wheel
+echo "Installing dependencies with uv..."
+# uv pip resolves and installs packages in a fraction of a second
+uv pip install --python $PROJECT_BASE_PATH/env -r $PROJECT_BASE_PATH/requirements.txt
+uv pip install --python $PROJECT_BASE_PATH/env gunicorn
 
-$PROJECT_BASE_PATH/env/bin/pip install -r $PROJECT_BASE_PATH/requirements.txt
-$PROJECT_BASE_PATH/env/bin/pip install gunicorn python-multipart
-
-SITE_PACKAGES_DIR=$($PROJECT_BASE_PATH/env/bin/python -c "import site; print(site.getsitepackages()[0])")
-cat << 'EOF' > "$SITE_PACKAGES_DIR/cgi.py"
-# Temporary cgi polyfill for legacy frameworks under Python 3.14
-from multipart.multipart import parse_options_header
-import sys
-
-def parse_header(line):
-    return parse_options_header(line)
-
-sys.modules['cgi'] = sys.modules[__name__]
-EOF
-
+echo "Running database migrations..."
 $PROJECT_BASE_PATH/env/bin/python $PROJECT_SRC_PATH/manage.py migrate
 
+echo "Configuring Server routing..."
 cp $PROJECT_SRC_PATH/deploy/supervisor_profiles_api.conf /etc/supervisor/conf.d/profiles_api.conf
 supervisorctl reread
 supervisorctl update
@@ -51,4 +49,4 @@ rm -f /etc/nginx/sites-enabled/profiles_api.conf
 ln -s /etc/nginx/sites-available/profiles_api.conf /etc/nginx/sites-enabled/profiles_api.conf
 systemctl restart nginx.service
 
-echo "DONE! :)"
+echo "DONE! Go to sleep. :)"
