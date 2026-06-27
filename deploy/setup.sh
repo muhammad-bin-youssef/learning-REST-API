@@ -6,7 +6,6 @@ PROJECT_GIT_URL='https://github.com/muhammad-bin-youssef/learning-REST-API.git'
 PROJECT_BASE_PATH='/usr/local/apps/profiles-rest-api'
 PROJECT_SRC_PATH="$PROJECT_BASE_PATH/project"
 
-# Set Ubuntu Language non-interactively
 export DEBIAN_FRONTEND=noninteractive
 locale-gen en_GB.UTF-8
 
@@ -20,17 +19,14 @@ if [ -d "$PROJECT_BASE_PATH/.git" ]; then
 fi
 git clone $PROJECT_GIT_URL $PROJECT_BASE_PATH
 
-# Use default system Python 3.14
 python3 -m venv $PROJECT_BASE_PATH/env
 
-# Upgrade packaging tools
 $PROJECT_BASE_PATH/env/bin/pip install --upgrade pip setuptools wheel
 
-# Install core packages along with Gunicorn
+# FIXED: Added python-multipart for the cgi polyfill dependency
 $PROJECT_BASE_PATH/env/bin/pip install -r $PROJECT_BASE_PATH/requirements.txt
-$PROJECT_BASE_PATH/env/bin/pip install gunicorn
+$PROJECT_BASE_PATH/env/bin/pip install gunicorn python-multipart
 
-# FIX: Manually inject a cgi polyfill into the environment so Django 2.2 doesn't crash on Python 3.14
 SITE_PACKAGES_DIR=$($PROJECT_BASE_PATH/env/bin/python -c "import site; print(site.getsitepackages()[0])")
 cat << 'EOF' > "$SITE_PACKAGES_DIR/cgi.py"
 # Temporary cgi polyfill for legacy frameworks under Python 3.14
@@ -43,16 +39,13 @@ def parse_header(line):
 sys.modules['cgi'] = sys.modules[__name__]
 EOF
 
-# Run migrations from the project subdirectory
 $PROJECT_BASE_PATH/env/bin/python $PROJECT_SRC_PATH/manage.py migrate
 
-# Setup Supervisor to run our gunicorn process
 cp $PROJECT_SRC_PATH/deploy/supervisor_profiles_api.conf /etc/supervisor/conf.d/profiles_api.conf
 supervisorctl reread
 supervisorctl update
 supervisorctl restart profiles_api
 
-# Setup nginx to make our application accessible
 cp $PROJECT_SRC_PATH/deploy/nginx_profiles_api.conf /etc/nginx/sites-available/profiles_api.conf
 rm -f /etc/nginx/sites-enabled/default
 rm -f /etc/nginx/sites-enabled/profiles_api.conf
