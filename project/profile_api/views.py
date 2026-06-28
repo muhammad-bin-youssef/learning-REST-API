@@ -87,10 +87,7 @@ class UserLoginApiView(ObtainAuthToken):
 class UserProfileFeedViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
     serializer_class = serializers.ProfileFeedItemSerializer
-    queryset = models.ProfileFeedItem.objects.all()
-    permission_classes = (
-        permissions.UpdateOwnStatus,
-        IsAuthenticated,
+    queryset = models.ProfileFeedItem.objects.all() permission_classes = ( permissions.UpdateOwnStatus, IsAuthenticated,
     )
 
     def perform_create(self, serializer):
